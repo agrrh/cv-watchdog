@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import argparse
+import sh
+import requests
+
+def args_parse():
+    parser = argparse.ArgumentParser(description='Watch for CV page visitors.')
+
+    parser.add_argument('--uri-path', type=str, help='substring to grep from log, ex. "/pages/cv"')
+    parser.add_argument('--log-path', type=str, help='path to log file, ex. "/var/log/my.log"')
+
+    parser.add_argument('--tg-token', type=str, help='Telegram Bot token')
+    parser.add_argument('--tg-chat-id', type=str, help='Telegram chat ID to send notifies to')
+
+    return parser.parse_args()
+
+def prettify(line):
+    ip = line.split(' ')[0]
+
+    tag = line.split(' ')[6].split('?')[1]
+    tag = tag if tag else 'unknown'
+
+    return 'New visit from [{ip}](https://www.reg.ru/whois/?dname={ip}) with *{tag}* tag.\n\n`{line}`'.format(ip=ip, tag=tag.upper(), line=line)
+
+def notify(tg_token, tg_chat_id, message):
+    message = prettify(message)
+    uri = 'https://api.telegram.org/bot' + tg_token + '/sendMessage'
+    data = {
+        'chat_id': tg_chat_id,
+        'text': message,
+        'parse_mode': 'Markdown'
+    }
+    res = requests.post(uri, data=data)
+    return res
+
+if __name__ == '__main__':
+    args = args_parse()
+
+    print(args)
+
+    # https://stackoverflow.com/a/12523119
+    tail = sh.tail("-f", args.log_path, _iter=True)
+
+    for line in tail:
+        if args.uri_path in line:
+            res = notify(args.tg_token, args.tg_chat_id, line)
+            print(res)
