@@ -29,7 +29,8 @@ def notify(tg_token, tg_chat_id, message):
     data = {
         'chat_id': tg_chat_id,
         'text': message,
-        'parse_mode': 'Markdown'
+        'parse_mode': 'Markdown',
+        'disable_web_page_preview': True
     }
     res = requests.post(uri, data=data)
     return res
@@ -37,12 +38,9 @@ def notify(tg_token, tg_chat_id, message):
 if __name__ == '__main__':
     args = args_parse()
 
-    print(args)
-
     # https://stackoverflow.com/a/12523119
     tail = sh.tail("-f", args.log_path, _iter=True)
 
     for line in tail:
         if args.uri_path in line:
-            res = notify(args.tg_token, args.tg_chat_id, line)
-            print(res)
+            notify(args.tg_token, args.tg_chat_id, line)
