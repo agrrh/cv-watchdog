@@ -17,9 +17,7 @@ def args_parse():
 
 def prettify(line):
     ip = line.split(' ')[0]
-
-    tag = line.split(' ')[6].split('?')[1]
-    tag = tag if tag else 'unknown'
+    tag = line.split(' ')[6].split('?')[1] if '?' in line else 'unknown'
 
     return 'New visit from [{ip}](https://www.reg.ru/whois/?dname={ip}) with *{tag}* tag.\n\n`{line}`'.format(ip=ip, tag=tag.upper(), line=line)
 
