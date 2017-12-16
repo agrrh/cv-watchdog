@@ -9,6 +9,7 @@ def args_parse():
 
     parser.add_argument('--uri-path', type=str, help='substring to grep from log, ex. "/pages/cv"')
     parser.add_argument('--log-path', type=str, help='path to log file, ex. "/var/log/my.log"')
+    parser.add_argument('--ignore', type=str, help='Comma-separated substrings to ignore, ex. "10.0.0.,?arg"')
 
     parser.add_argument('--tg-token', type=str, help='Telegram Bot token')
     parser.add_argument('--tg-chat-id', type=str, help='Telegram chat ID to send notifies to')
@@ -41,4 +42,10 @@ if __name__ == '__main__':
 
     for line in tail:
         if args.uri_path in line:
-            notify(args.tg_token, args.tg_chat_id, line)
+            show = True
+            for ignore in args.ignore:
+                if ignore in line:
+                    show = False
+                    continue
+            if show:
+                notify(args.tg_token, args.tg_chat_id, line)
