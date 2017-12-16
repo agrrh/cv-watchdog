@@ -43,9 +43,12 @@ if __name__ == '__main__':
     for line in tail:
         if args.uri_path in line:
             show = True
-            for ignore in args.ignore:
+            for ignore in args.ignore.split(','):
                 if ignore in line:
                     show = False
                     continue
             if show:
+                print('notify: {}'.format(line))
                 notify(args.tg_token, args.tg_chat_id, line)
+            else:
+                print('ignored: {}; {}'.format(line, args.ignore))
