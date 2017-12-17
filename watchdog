@@ -25,8 +25,8 @@ def notify(tg_token, tg_chat_id, message):
 
 if __name__ == '__main__':
     try:
-        uri_path = os.environ['CV_WATCHDOG_URI_PATH']
         log_path = os.environ['CV_WATCHDOG_LOG_PATH']
+        uri_path = os.environ['CV_WATCHDOG_URI_PATH']
         ignore_list = os.environ['CV_WATCHDOG_IGNORE'] if 'CV_WATCHDOG_IGNORE' in os.environ else None
         tg_token = os.environ['CV_WATCHDOG_TG_TOKEN']
         tg_chat_id = os.environ['CV_WATCHDOG_TG_CHAT_ID']
@@ -34,18 +34,23 @@ if __name__ == '__main__':
         print('Could not proceed w/o required params, specify env var: {}'.format(e))
         sys.exit(1)
 
+    print('args: {}; {}; {}; {}; {}'.format(log_path, uri_path, ignore_list, tg_token, tg_chat_id))
+
+    print('Starting tail -f ...')
     # https://stackoverflow.com/a/12523119
     tail = sh.tail("-f", log_path, _iter=True)
 
     for line in tail:
         if uri_path in line:
+            print(line.trim())
+
             show = True
             for ignore in ignore_list.split(','):
                 if ignore in line:
                     show = False
                     continue
             if show:
-                print('notify: {}'.format(line))
+                print('notify')
                 notify(tg_token, tg_chat_id, line)
             else:
-                print('ignored: {}; {}'.format(line, ignore_list))
+                print('ignored: {}'.format(ignore_list))
