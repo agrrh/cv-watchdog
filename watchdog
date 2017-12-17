@@ -1,20 +1,9 @@
 #!/usr/bin/env python
 
-import argparse
+import os
+import sys
 import sh
 import requests
-
-def args_parse():
-    parser = argparse.ArgumentParser(description='Watch for CV page visitors.')
-
-    parser.add_argument('--uri-path', type=str, help='substring to grep from log, ex. "/pages/cv"')
-    parser.add_argument('--log-path', type=str, help='path to log file, ex. "/var/log/my.log"')
-    parser.add_argument('--ignore', type=str, help='Comma-separated substrings to ignore, ex. "10.0.0.,?arg"')
-
-    parser.add_argument('--tg-token', type=str, help='Telegram Bot token')
-    parser.add_argument('--tg-chat-id', type=str, help='Telegram chat ID to send notifies to')
-
-    return parser.parse_args()
 
 def prettify(line):
     ip = line.split(' ')[0]
@@ -35,20 +24,28 @@ def notify(tg_token, tg_chat_id, message):
     return res
 
 if __name__ == '__main__':
-    args = args_parse()
+    try:
+        uri_path = os.environ['CV_WATCHDOG_URI_PATH']
+        log_path = os.environ['CV_WATCHDOG_LOG_PATH']
+        ignore_list = os.environ['CV_WATCHDOG_IGNORE'] if 'CV_WATCHDOG_IGNORE' in os.environ else None
+        tg_token = os.environ['CV_WATCHDOG_TG_TOKEN']
+        tg_chat_id = os.environ['CV_WATCHDOG_TG_CHAT_ID']
+    except KeyError, e:
+        print('Could not proceed w/o required params, specify env var: {}'.format(e))
+        sys.exit(1)
 
     # https://stackoverflow.com/a/12523119
-    tail = sh.tail("-f", args.log_path, _iter=True)
+    tail = sh.tail("-f", log_path, _iter=True)
 
     for line in tail:
-        if args.uri_path in line:
+        if uri_path in line:
             show = True
-            for ignore in args.ignore.split(','):
+            for ignore in ignore_list(','):
                 if ignore in line:
                     show = False
                     continue
             if show:
                 print('notify: {}'.format(line))
-                notify(args.tg_token, args.tg_chat_id, line)
+                notify(tg_token, tg_chat_id, line)
             else:
-                print('ignored: {}; {}'.format(line, args.ignore))
+                print('ignored: {}; {}'.format(line, ignore_list))
