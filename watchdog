@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -30,7 +30,7 @@ if __name__ == '__main__':
         ignore_list = os.environ['CV_WATCHDOG_IGNORE'] if 'CV_WATCHDOG_IGNORE' in os.environ else None
         tg_token = os.environ['CV_WATCHDOG_TG_TOKEN']
         tg_chat_id = os.environ['CV_WATCHDOG_TG_CHAT_ID']
-    except KeyError, e:
+    except KeyError as e:
         print('Could not proceed w/o required params, specify env var: {}'.format(e))
         sys.exit(1)
 
