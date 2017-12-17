@@ -40,7 +40,7 @@ if __name__ == '__main__':
     for line in tail:
         if uri_path in line:
             show = True
-            for ignore in ignore_list(','):
+            for ignore in ignore_list.split(','):
                 if ignore in line:
                     show = False
                     continue
