@@ -4,6 +4,19 @@ import os
 import sys
 import sh
 import requests
+import time
+
+
+# https://stackoverflow.com/a/1476006
+def follow(fpath):
+    fp = open(fpath)
+    fp.seek(0,2)      # Go to the end of the file
+    while True:
+         line = fp.readline()
+         if not line:
+             time.sleep(0.1)    # Sleep briefly
+             continue
+         yield line
 
 def prettify(line):
     ip = line.split(' ')[0]
@@ -37,8 +50,7 @@ if __name__ == '__main__':
     print('args: {}; {}; {}; {}; {}'.format(log_path, uri_path, ignore_list, tg_token, tg_chat_id))
 
     print('Starting tail -f ...')
-    # https://stackoverflow.com/a/12523119
-    tail = sh.tail("-f", log_path, _iter=True)
+    tail = follow(log_path)
 
     for line in tail:
         if uri_path in line:
