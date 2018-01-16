@@ -2,9 +2,30 @@
 
 import os
 import sys
+import yaml
 import requests
 import time
 
+
+DATA_DEFAULT = {'tags': {}, 'src': {}}
+FPATH = './data.yml'
+
+def data_save(data):
+    with open(FPATH, 'w+') as fp:
+        data = yaml.dump(data, default_flow_style=False)
+        fp.write(data)
+        fp.close()
+    return True
+
+def data_load():
+    if not os.path.isfile(FPATH):
+        data_save(DATA_DEFAULT)
+        result = DATA_DEFAULT
+    else:
+        with open(FPATH, 'r') as fp:
+            result = yaml.load(fp)
+            fp.close()
+    return result
 
 # https://stackoverflow.com/a/1476006
 def follow(fpath):
@@ -17,14 +38,16 @@ def follow(fpath):
              continue
          yield line
 
-def prettify(line):
+def parse_log_line(line):
     ip = line.split(' ')[0]
     tag = line.split(' ')[6].split('?')[1] if '?' in line else 'unknown'
 
-    return 'New visit from [{ip}](https://www.reg.ru/whois/?dname={ip}) with *{tag}* tag.\n\n`{line}`'.format(ip=ip, tag=tag.upper(), line=line)
+    return {'ip': ip, 'tag': tag, 'line': line}
 
-def notify(tg_token, tg_chat_id, message):
-    message = prettify(message)
+def notify(tg_token, tg_chat_id, message_dict, src_count, tag_count):
+    message_dict['src_count'] = src_count
+    message_dict['tag_count'] = tag_count
+    message = 'New visit from [{ip}](https://www.reg.ru/whois/?dname={ip}) ({src_count}) with *{tag}* ({tag_count}) tag.\n\n`{line}`'.format(**message_dict)
     uri = 'https://api.telegram.org/bot' + tg_token + '/sendMessage'
     data = {
         'chat_id': tg_chat_id,
@@ -50,6 +73,7 @@ if __name__ == '__main__':
 
     print('Starting tail -f ...')
     tail = follow(log_path)
+    data = data_load()
 
     for line in tail:
         if uri_path in line:
@@ -62,6 +86,17 @@ if __name__ == '__main__':
                     continue
             if show:
                 print('notify')
-                notify(tg_token, tg_chat_id, line)
+                message_dict = parse_log_line(line)
+                if message_dict['tag'] != 'unknown':
+                    if message_dict['tag'] not in data['tags']:
+                        data['tags'] = 0
+                    else:
+                        data['tags'] += 1
+                if message_dict['ip'] not in data['src']:
+                    data['src'] = 0
+                else:
+                    data['src'] += 1
+                data_save(data)
+                notify(tg_token, tg_chat_id, message_dict, src_count=data['src'], tag_count=data['tag'])
             else:
                 print('ignored: {}'.format(ignore_list))
