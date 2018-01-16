@@ -97,6 +97,6 @@ if __name__ == '__main__':
                 else:
                     data['src'] += 1
                 data_save(data)
-                notify(tg_token, tg_chat_id, message_dict, src_count=data['src'], tag_count=data['tag'])
+                notify(tg_token, tg_chat_id, message_dict, src_count=message_dict['src'], tag_count=message_dict['tag'])
             else:
                 print('ignored: {}'.format(ignore_list))
