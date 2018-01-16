@@ -87,11 +87,12 @@ if __name__ == '__main__':
             if show:
                 print('notify')
                 message_dict = parse_log_line(line)
-                if message_dict['tag'] != 'unknown':
-                    if message_dict['tag'] not in data['tags']:
-                        data['tags'][message_dict['tag']] = 0
-                    else:
-                        data['tags'][message_dict['tag']] += 1
+
+                if message_dict['tag'] not in data['tags']:
+                    data['tags'][message_dict['tag']] = 0
+                else:
+                    data['tags'][message_dict['tag']] += 1
+
                 if message_dict['ip'] not in data['src']:
                     data['src'][message_dict['ip']] = 0
                 else:
