@@ -89,13 +89,13 @@ if __name__ == '__main__':
                 message_dict = parse_log_line(line)
                 if message_dict['tag'] != 'unknown':
                     if message_dict['tag'] not in data['tags']:
-                        data['tags'] = 0
+                        data['tags'][message_dict['tag']] = 0
                     else:
-                        data['tags'] += 1
+                        data['tags'][message_dict['tag']] += 1
                 if message_dict['ip'] not in data['src']:
-                    data['src'] = 0
+                    data['src'][message_dict['ip']] = 0
                 else:
-                    data['src'] += 1
+                    data['src'][message_dict['ip']] += 1
                 data_save(data)
                 notify(tg_token, tg_chat_id, message_dict, src_count=message_dict['ip'], tag_count=message_dict['tag'])
             else:
