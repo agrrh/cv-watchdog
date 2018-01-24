@@ -98,6 +98,8 @@ if __name__ == '__main__':
                 else:
                     data['src'][message_dict['ip']] += 1
                 data_save(data)
-                notify(tg_token, tg_chat_id, message_dict, src_count=data['src'][message_dict['ip']], tag_count=data['tags'][message_dict['tag']])
+
+                if message_dict['tag'] != 'unknown':
+                    notify(tg_token, tg_chat_id, message_dict, src_count=data['src'][message_dict['ip']], tag_count=data['tags'][message_dict['tag']])
             else:
                 print('ignored: {}'.format(ignore_list))
